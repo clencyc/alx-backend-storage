@@ -50,3 +50,20 @@ class Cache:
         except ValueError:
             return None
 
+    def count_calls(self, method: Callable) -> Callable:
+        """
+        Decorator that counts calls to a method and increaments a Redis counter
+        Args:
+        method: The method to decorate
+        """
+        @functools.wraps(method)
+        def wrapper(self, *args, **kwargs):
+            method_name = method.__qualname__
+            self._redis.incr(method_name)
+            return method(self, *args, **kwargs)
+        return wrapper
+
+    @count_calls
+    def store(self, data: Union[str, bytes, int, float]) -> str:
+        return super().store(data)
+
