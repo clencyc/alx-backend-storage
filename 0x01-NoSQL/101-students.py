@@ -7,10 +7,14 @@ def top_students(mongo_collection):
     Returns all students sorted by average score with avscore field
     """
 
-    pipeline = [
-            {"$unwind": "$scores"},
-            {"$group": {"_id": "$_id", "name": {"$first": "$name"}, "averageScore": {"$avg": "$scores.score"}}},
-            {"$sort": {"averageScore": -1}}
-            ]
-    result = mongo_collection.aggregate(pipeline)
-    return list(result)
+    top_st = mongo_collection.aggregate([
+        {
+            "$project": {
+                "name": "$name",
+                "averageScore": {"$avg": "$topics.score"}
+            }
+        },
+        {"$sort": {"averageScore": -1}}
+    ])
+
+    return top_st
